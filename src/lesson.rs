@@ -47,11 +47,11 @@ pub fn list_ids(lesson_dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     for entry in std::fs::read_dir(lesson_dir)? {
         let entry = entry?;
         let name = entry.file_name().to_string_lossy().to_string();
-        if name.ends_with(".md") && name.len() >= 3 {
-            let prefix = &name[..3];
+        if name.ends_with(".md") {
+            let prefix: String = name.chars().take(3).collect();
             // Only collect if the first 3 chars are all ASCII digits
-            if prefix.chars().all(|c| c.is_ascii_digit()) {
-                ids.push(prefix.to_string());
+            if prefix.len() == 3 && prefix.chars().all(|c| c.is_ascii_digit()) {
+                ids.push(prefix);
             }
         }
     }
