@@ -22,3 +22,85 @@
 ## Rule of Thumb
 - `cargo run` while building
 - `cargo build --release` for the real thing
+
+---
+
+# Rust: Shadowing (`let x = x.len()`)
+
+**Date:** 2026-05-14
+**Tags:** #rust #variable-shadowing #immutability #let
+
+## Summary
+
+Shadowing is declaring a **new variable** with the same name as an existing one, hiding the old one. It is NOT mutation — it's a new binding that can have a different type, and doesn't need `mut`.
+
+```rust
+let spaces = "   ";       // &str
+let spaces = spaces.len(); // usize — new variable, shadowed
+```
+
+## Why It Was Designed This Way
+
+1. **Transform values without inventing names** — avoid `input_trimmed`, `input_parsed` suffixes. Keep the same name through a pipeline of transformations.
+
+2. **Enforce immutability through transformations** — after `let data = validate(data)`, the raw unvalidated data is inaccessible. Compiler prevents accidental use of stale intermediate values.
+
+3. **Avoid unnecessary `mut`** — use a block to create a mutable intermediate, then shadow the immutable result back to the original name.
+
+## Key Insight
+
+Shadowing is a **compile-time concept** with zero runtime cost. The old variable simply goes out of scope. The compiler may reuse the stack slot if types are compatible.
+
+```rust
+// Not mutation (would fail — can't change type)
+let mut x = "hello";
+x = x.len(); // ERROR
+
+// Shadowing (OK — new variable)
+let x = "hello";
+let x = x.len(); // OK — x is now usize
+```
+
+---
+
+# Rust: `dbg!` Macro
+
+**Date:** 2026-05-14
+**Tags:** #rust #debugging #macro #dbg
+
+## Summary
+
+`dbg!` prints **file, line number, and value** to stderr, then returns ownership of the value — so it can be used inline without breaking code flow.
+
+```rust
+let x = 5;
+let y = dbg!(x);  // [src/main.rs:3] x = 5
+```
+
+## `dbg!` vs `println!`
+
+| | `dbg!` | `println!` |
+|---|---|---|
+| Output | stderr | stdout |
+| Location | Auto (file + line) | Manual |
+| Returns value | Yes (ownership) | No (returns `()`) |
+| Format | `{:?}` (Debug trait) | Custom format string |
+
+## Key Insight
+
+Because `dbg!` returns the value, you can wrap any expression inline:
+
+```rust
+// Wrap an expression mid-chain
+let result = dbg!(expensive_calculation());
+
+// In iterator chains
+let numbers: Vec<i32> = vec![1, 2, 3]
+    .iter()
+    .map(|n| dbg!(n * 2))  // see each step
+    .collect();
+
+// Borrow to avoid move
+let counter = 42;
+dbg!(&counter);  // borrows, doesn't consume
+```
