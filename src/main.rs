@@ -158,7 +158,59 @@ fn prompt_complete() -> bool {
 }
 
 fn cmd_progress() {
-    println!("TODO: show progress");
+    let progress_path = get_progress_path();
+
+    let progress = match progress::load(&progress_path) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("No progress file found at {:?}", progress_path);
+            eprintln!("Run `rust-mentor today` first to get started.");
+            eprintln!("({})", e);
+            process::exit(1);
+        }
+    };
+
+    let lesson_dir = std::path::Path::new("lessons");
+    let total_lessons = match lesson::list_ids(&lesson_dir) {
+        Ok(ids) => ids.len(),
+        Err(_) => 0,
+    };
+
+    let completed_count = progress.completed.len();
+    let pct = if total_lessons > 0 {
+        (completed_count as f64 / total_lessons as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    let bar = "━".repeat(36);
+
+    println!("{}", bar);
+    println!("  Streak:        {} day(s) 🔥", progress.streak.current);
+    println!("  Longest streak: {} day(s)", progress.streak.longest);
+    println!(
+        "  Completed:      {} / {} lessons ({:.0}%)",
+        completed_count, total_lessons, pct
+    );
+    println!(
+        "  Started:        {}",
+        progress.started_at.format("%B %d, %Y")
+    );
+    println!("  Progress:       {}", render_progress_bar(pct));
+    println!("{}", bar);
+}
+
+/// Render a simple ASCII progress bar like [████░░░░░░░░░░░░░░] 6%
+fn render_progress_bar(pct: f64) -> String {
+    let width = 20;
+    let filled = ((pct / 100.0) * width as f64).round() as usize;
+    let empty = width - filled;
+    format!(
+        "[{}{}] {:.0}%",
+        "█".repeat(filled),
+        "░".repeat(empty),
+        pct
+    )
 }
 
 fn print_help() {
