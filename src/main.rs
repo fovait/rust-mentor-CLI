@@ -34,7 +34,11 @@ fn cmd_today() {
     // Load or create progress
     let mut progress = match progress::load(&progress_path) {
         Ok(p) => p,
-        Err(_) => {
+        Err(e) => {
+            eprintln!(
+                "Note: Could not read progress file ({}) — starting fresh.",
+                e
+            );
             let p = Progress::new();
             if let Err(e) = progress::save(&progress_path, &p) {
                 eprintln!("Error creating progress file: {}", e);
