@@ -68,8 +68,8 @@ pub fn mark_completed(progress: &mut Progress, id: &str) {
         Some(last_date) => {
             let diff = (today - last_date).num_days();
             if diff == 0 {
-                // Same-day completion, do nothing (already handled by the early return above)
-                // This branch is unreachable for new IDs but kept for clarity
+                // Same-day completion of a different lesson — no streak change.
+                // Streak counts consecutive days, not lessons per day.
             } else if diff == 1 {
                 // Consecutive day
                 progress.streak.current += 1;
