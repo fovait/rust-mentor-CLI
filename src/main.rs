@@ -95,10 +95,9 @@ fn cmd_today() {
     }
 }
 
-/// Resolve the progress file path to ~/.rust-mentor.json
+/// Resolve the progress file path to .rust-mentor.json in the current directory
 fn get_progress_path() -> std::path::PathBuf {
-    let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    std::path::PathBuf::from(home).join(".rust-mentor.json")
+    std::path::PathBuf::from(".rust-mentor.json")
 }
 
 /// Render a lesson to the terminal

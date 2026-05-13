@@ -28,7 +28,7 @@ Lessons live as markdown files in `lessons/`. Each lesson has four sections:
 - **Why It Matters** (2 min) — Context and motivation
 - **Try It** (1 min) — Hands-on exercise
 
-Progress is tracked in `~/.rust-mentor.json` with streak and completion data.
+Progress is tracked in `.rust-mentor.json` with streak and completion data.
 
 ## Project Structure
 
