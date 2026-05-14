@@ -104,3 +104,36 @@ let numbers: Vec<i32> = vec![1, 2, 3]
 let counter = 42;
 dbg!(&counter);  // borrows, doesn't consume
 ```
+
+---
+
+# Rust: `.iter()` vs `.into_iter()`
+
+**Date:** 2026-05-14
+**Tags:** #rust #iterators #ownership #borrowing
+
+## Summary
+
+| | `.iter()` | `.into_iter()` |
+|---|---|---|
+| Yields | `&T` (references) | `T` (owned values) |
+| Borrows or owns? | Borrows | Takes ownership |
+| Original collection | Still usable | Consumed (gone) |
+| Get owned value | Must `.clone()` (allocates) | Free — transfers ownership |
+| Use when | Reading, need collection later | Extracting values, last use |
+
+## Key Insight
+
+`.into_iter()` lets you extract owned values from a collection without cloning — the Vec is destroyed but its elements live on in their new home. `.iter()` can only give you references.
+
+```rust
+let words = vec![String::from("hello"), String::from("world")];
+
+// .iter() — need .cloned() to get owned String (allocates new memory)
+let cloned: Vec<String> = words.iter().cloned().collect();
+
+// .into_iter() — takes Strings directly (zero allocation)
+let owned: Vec<String> = words.into_iter().collect();
+```
+
+**Rule of thumb:** `.iter()` to read, `.into_iter()` to extract. If you find yourself writing `.iter().cloned()` everywhere, you probably want `.into_iter()`.
