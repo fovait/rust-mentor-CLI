@@ -137,3 +137,45 @@ let owned: Vec<String> = words.into_iter().collect();
 ```
 
 **Rule of thumb:** `.iter()` to read, `.into_iter()` to extract. If you find yourself writing `.iter().cloned()` everywhere, you probably want `.into_iter()`.
+
+---
+
+# Rust: Shared XOR Mutable (`&T` vs `&mut T`)
+
+**Date:** 2026-05-15
+**Tags:** #rust #references #borrowing #borrow-checker
+
+## Summary
+
+Rust's borrow checker enforces one rule: **many `&T` OR one `&mut T`, never both at the same time.** This eliminates data races at compile time.
+
+```rust
+let mut s = String::from("hello");
+
+let r1 = &s;       // shared borrow — reading
+let r2 = &mut s;   // ❌ ERROR [E0502]: can't mutable borrow while immutable borrow exists
+println!("{}", r1);
+```
+
+## Why It Matters
+
+| Problem | Languages | Rust |
+|---|---|---|
+| Data races | C, C++ (runtime bugs) | Caught at compile time |
+| Iterator invalidation | Java, Python (runtime) | Caught at compile time |
+| Dangling references | C, C++ (UB / segfault) | Caught at compile time |
+
+## Fixes
+
+```rust
+// Fix A: let shared borrow die first
+{
+    let r1 = &s;
+    println!("{}", r1);
+}  // r1 scope ends — shared borrow released
+let r2 = &mut s;  // ✅
+
+// Fix B: use shared then mutate (no overlap)
+let len = s.len();  // borrow ends after this line
+s.push_str("!");    // ✅
+```
